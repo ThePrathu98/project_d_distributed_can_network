@@ -1,0 +1,26 @@
+# ESP8266 build output
+build/
+sdkconfig.old
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Temporary logs and captures
+*.tmp
+*.bak
+*.swp
+
+# Large raw Saleae captures
+*.sal
