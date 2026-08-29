@@ -1,0 +1,96 @@
+VERSION "Project D - Distributed Motor-Control CAN Network v0.1"
+
+NS_ :
+    NS_DESC_
+    CM_
+    BA_DEF_
+    BA_
+    VAL_
+    CAT_DEF_
+    CAT_
+    FILTER
+    SIG_VALTYPE_
+    SIGTYPE_VALTYPE_
+    BO_TX_BU_
+    BA_DEF_DEF_
+    EV_DATA_
+    ENVVAR_DATA_
+    SGTYPE_
+    SGTYPE_VALTYPE_
+    DUMMY_NODE_VECTOR
+    VECTOR_INFORMATIONS
+    NS_ TYPE
+    BS_ TYPE
+    BU_SG_REL_
+    BU_EV_REL_
+    BU_BO_REL_
+    SG_MUL_VAL_
+
+BS_:
+
+BU_: MOTOR_ECU GATEWAY_ECU SUPERVISOR_ECU
+
+BO_ 256 MOTOR_COMMAND: 8 GATEWAY_ECU
+ SG_ Command : 0|8@1+ (1,0) [0|255] "" MOTOR_ECU
+ SG_ TargetRPM : 8|16@1+ (1,0) [0|5000] "rpm" MOTOR_ECU
+ SG_ CommandCounter : 48|4@1+ (1,0) [0|15] "" MOTOR_ECU
+ SG_ CRC8 : 56|8@1+ (1,0) [0|255] "" MOTOR_ECU
+
+BO_ 257 MOTOR_STATUS: 8 MOTOR_ECU
+ SG_ TargetRPM : 0|16@1+ (1,0) [0|5000] "rpm" GATEWAY_ECU
+ SG_ ActualRPM : 16|16@1+ (1,0) [0|5000] "rpm" GATEWAY_ECU
+ SG_ Current : 32|16@1+ (0.1,0) [0|100] "A" GATEWAY_ECU
+ SG_ MotorState : 48|4@1+ (1,0) [0|15] "" GATEWAY_ECU
+ SG_ StatusCounter : 52|4@1+ (1,0) [0|15] "" GATEWAY_ECU
+ SG_ CRC8 : 56|8@1+ (1,0) [0|255] "" GATEWAY_ECU
+
+BO_ 258 MOTOR_DIAGNOSTIC: 8 MOTOR_ECU
+ SG_ FaultCode : 0|16@1+ (1,0) [0|65535] "" GATEWAY_ECU
+ SG_ RxErrorCount : 16|8@1+ (1,0) [0|255] "" GATEWAY_ECU
+ SG_ TxErrorCount : 24|8@1+ (1,0) [0|255] "" GATEWAY_ECU
+ SG_ MissedDeadlineCount : 32|8@1+ (1,0) [0|255] "" GATEWAY_ECU
+ SG_ HeartbeatAgeMs : 40|8@1+ (10,0) [0|2550] "ms" GATEWAY_ECU
+ SG_ DiagnosticCounter : 48|4@1+ (1,0) [0|15] "" GATEWAY_ECU
+ SG_ CRC8 : 56|8@1+ (1,0) [0|255] "" GATEWAY_ECU
+
+BO_ 272 SUPERVISOR_HEARTBEAT: 8 SUPERVISOR_ECU
+ SG_ HeartbeatCounter : 0|8@1+ (1,0) [0|255] "" MOTOR_ECU,GATEWAY_ECU
+ SG_ PowerMode : 8|4@1+ (1,0) [0|15] "" MOTOR_ECU,GATEWAY_ECU
+ SG_ ArmAuthorization : 12|1@1+ (1,0) [0|1] "" MOTOR_ECU,GATEWAY_ECU
+ SG_ SupervisorState : 16|8@1+ (1,0) [0|255] "" MOTOR_ECU,GATEWAY_ECU
+ SG_ SequenceCounter : 48|4@1+ (1,0) [0|15] "" MOTOR_ECU,GATEWAY_ECU
+ SG_ CRC8 : 56|8@1+ (1,0) [0|255] "" MOTOR_ECU,GATEWAY_ECU
+
+BO_ 288 GATEWAY_HEARTBEAT: 8 GATEWAY_ECU
+ SG_ HeartbeatCounter : 0|8@1+ (1,0) [0|255] "" MOTOR_ECU,SUPERVISOR_ECU
+ SG_ NetworkState : 8|4@1+ (1,0) [0|15] "" MOTOR_ECU,SUPERVISOR_ECU
+ SG_ TcpConnected : 12|1@1+ (1,0) [0|1] "" MOTOR_ECU,SUPERVISOR_ECU
+ SG_ SequenceCounter : 48|4@1+ (1,0) [0|15] "" MOTOR_ECU,SUPERVISOR_ECU
+ SG_ CRC8 : 56|8@1+ (1,0) [0|255] "" MOTOR_ECU,SUPERVISOR_ECU
+
+VAL_ 256 Command 0 "DISARM" 1 "ARM" 2 "SET_SPEED" 3 "STOP" 4 "CLEAR_FAULT";
+VAL_ 257 MotorState 0 "IDLE" 1 "ARMED" 2 "RUNNING" 3 "FAULT";
+VAL_ 272 PowerMode 0 "OFF" 1 "STANDBY" 2 "RUN" 3 "FAULT";
+VAL_ 272 ArmAuthorization 0 "NOT_AUTHORIZED" 1 "AUTHORIZED";
+VAL_ 272 SupervisorState 0 "INIT" 1 "READY" 2 "RUNNING" 3 "FAULT";
+VAL_ 288 NetworkState 0 "DISCONNECTED" 1 "CONNECTED" 2 "DEGRADED" 3 "FAULT";
+VAL_ 288 TcpConnected 0 "DISCONNECTED" 1 "CONNECTED";
+
+BA_DEF_ BO_ "GenMsgCycleTime" INT 0 10000;
+BA_DEF_DEF_ "GenMsgCycleTime" 0;
+
+BA_ "GenMsgCycleTime" BO_ 257 20;
+BA_ "GenMsgCycleTime" BO_ 258 100;
+BA_ "GenMsgCycleTime" BO_ 272 20;
+BA_ "GenMsgCycleTime" BO_ 288 100;
+
+CM_ BO_ 256 "Gateway-to-Motor command. CRC8 and 4-bit rolling counter are transport integrity fields; exact CRC polynomial/coverage must match the common C implementation.";
+CM_ BO_ 257 "Motor status. Required 20 ms publication rate.";
+CM_ BO_ 258 "Motor diagnostics. Required 100 ms publication rate.";
+CM_ BO_ 272 "Supervisor heartbeat, power mode and ARM authorization. Supervisor is simulated first; physical implementation is optional.";
+CM_ BO_ 288 "Gateway heartbeat/network health.";
+CM_ SG_ 256 Command "Project D command set: ARM, DISARM, SET_SPEED, STOP, CLEAR_FAULT.";
+CM_ SG_ 257 MotorState "Project D motor safety states: IDLE, ARMED, RUNNING, FAULT.";
+CM_ SG_ 257 ActualRPM "Motor control remains a 1 kHz loop; CAN status is published every 20 ms.";
+CM_ SG_ 258 FaultCode "Expand the fault-code enumeration in network_design.md as implementation details are finalized.";
+
